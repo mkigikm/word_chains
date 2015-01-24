@@ -3,6 +3,8 @@
 require 'set'
 
 class WordChainer
+  attr_reader :source, :target
+
   SYSTEM_DICTIONARY = "/usr/share/dict/words"
   DEFAULT_DICTIONARY = "./dictionary.txt"
 
@@ -77,6 +79,8 @@ class WordChainer
     target = @target if target.nil?
     raise "ArgumentError" if target.nil?
 
+    return nil unless @visited_words.keys.include?(target)
+
     [].tap do |path|
       current = target
       until current.nil?
@@ -119,9 +123,64 @@ class WordChainer
 end
 
 if __FILE__ == $PROGRAM_NAME
-  chainer = WordChainer.default_dictionary
+  require 'getoptlong'
+
+  def usage_message
+    usage_message = <<EOF
+usage: #{$PROGRAM_NAME} [-d DICTIONARY_FILE] <source> [<target>]
+EOF
+    puts usage_message
+    exit
+  end
+
+  def print_path(chainer, target=nil)
+    target = chainer.target if target.nil?
+    path = chainer.find_path(target)
+
+    if path.nil?
+      puts "#{chainer.source} doesn't lead to #{target}"
+    else
+      chainer.find_path.each do |word|
+        puts word
+      end
+    end
+
+    nil
+  end
+
+  opts = GetoptLong.new(
+    ['--help', '-h', GetoptLong::NO_ARGUMENT],
+    ['--dictionary', '-d', GetoptLong::REQUIRED_ARGUMENT]
+  )
+  dictionary_file = WordChainer::DEFAULT_DICTIONARY
+
+
+  opts.each do |opt, arg|
+    case opt
+    when '--help'
+      puts usage_message
+      exit
+    when '--dictionary'
+      dictionary_file = arg
+    end
+  end
+
+  if ARGV.count == 0
+    puts usage_message
+    exit
+  end
+
+  chainer = WordChainer.new(dictionary_file)
+
   chainer.build_tree(ARGV.shift, ARGV.shift)
-  chainer.find_path.each do |word|
-    puts word
+
+  if chainer.target
+    print_path(chainer)
+  else #interactive mode broken right now
+    while true
+      print "find path from #{chainer.target} to: "
+      target = gets.chomp
+      print_path(chainer, target)
+    end
   end
 end
