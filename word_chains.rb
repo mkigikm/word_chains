@@ -2,6 +2,7 @@ require 'set'
 
 class WordChainer
   SYSTEM_DICTIONARY = "/usr/share/dict/words"
+  DEFAULT_DICTIONARY = "./dictionary.txt"
 
   def initialize(dictionary_filename)
     init_dictionary(dictionary_filename)
@@ -10,6 +11,10 @@ class WordChainer
 
   def self.system_dictionary
     WordChainer.new(SYSTEM_DICTIONARY)
+  end
+
+  def self.default_dictionary
+    WordChainer.new(DEFAULT_DICTIONARY)
   end
 
   def adjacent_words(word)
@@ -57,11 +62,11 @@ class WordChainer
   def build_tree(source, target=nil)
     raise "#{source} not in dictionary" unless valid_word?(source)
     raise "#{target} not in dictionary" unless target.nil? ||
-                                                valid_word(target)
+                                                valid_word?(target)
 
     init_tree(source, target)
     @queue = [source]
-    until @queue.empty?
+    until @queue.empty? || @visited_words.keys.include?(@target)
       explore_word(@queue.shift)
     end
   end
@@ -76,8 +81,24 @@ class WordChainer
   end
 
   def init_tree(source, target)
-    @visited_words = {}
+    @visited_words = {source => nil}
     @source = source
     @target = target
   end
+
+  def explore_word(current_word)
+    adjacent_words(current_word).each do |candidate|
+      #skip words we already have a path to
+      next if @visited_words.keys.include?(candidate)
+
+      @visited_words[candidate] = current_word
+
+      #don't need to continue if we've reached the target
+      return if candidate == @target
+
+      #otherwise add the candidate to the queue
+      @queue << candidate
+    end
+  end
+
 end
