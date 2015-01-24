@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'set'
 
 class WordChainer
@@ -71,6 +73,19 @@ class WordChainer
     end
   end
 
+  def find_path(target=nil)
+    target = @target if target.nil?
+    raise "ArgumentError" if target.nil?
+
+    [].tap do |path|
+      current = target
+      until current.nil?
+        path.unshift(current)
+        current = @visited_words[current]
+      end
+    end
+  end
+
   private
   def init_dictionary(dictionary_filename)
     @dictionary = Set.new(File.readlines(dictionary_filename).map(&:chomp))
@@ -101,4 +116,12 @@ class WordChainer
     end
   end
 
+end
+
+if __FILE__ == $PROGRAM_NAME
+  chainer = WordChainer.default_dictionary
+  chainer.build_tree(ARGV.shift, ARGV.shift)
+  chainer.find_path.each do |word|
+    puts word
+  end
 end
