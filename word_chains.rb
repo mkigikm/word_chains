@@ -40,7 +40,9 @@ class WordChainer
   end
 
   def tree
-    @visited_words.keys
+    @visited_words.keys.map do |word|
+      [word, find_path(word).count - 1]
+    end
   end
 
   def find_path(target=nil)
@@ -152,8 +154,8 @@ EOF
   end
 
   def print_tree(chainer)
-    chainer.tree.each do |word|
-      puts word
+    chainer.tree.each do |node|
+      puts "#{node.first} (#{node.last})"
     end
   end
 
@@ -190,16 +192,20 @@ EOF
     print_tree(chainer)
   end
 
+  # command line mode
   if chainer.target
     print_path(chainer)
-  else #interactive mode broken right now
+
+  else # interactive mode
     while true
       print "find path from #{chainer.target} to: "
       target = gets
-      if target.nil?
+
+      if target.nil? # EOF
         puts
         exit
       end
+
       print_path(chainer, target.chomp)
     end
   end
