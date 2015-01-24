@@ -7,6 +7,12 @@ class WordChainer
   end
 
   def adjacent_words(word)
+    adjacent_words_switch_one(word).concat(
+      adjacent_words_del_one(word)).concat(
+      adjacent_words_add_one(word))
+  end
+
+  def adjacent_words_switch_one(word)
     [].tap do |adjacents|
       word.length.times do |i|
         ('a'..'z').each do |letter|
@@ -20,6 +26,27 @@ class WordChainer
     end
   end
 
+  def adjacent_words_del_one(word)
+    [].tap do |adjacents|
+      word.length.times do |i|
+        candidate = word.dup
+        candidate[i] = ""
+        adjacents << candidate if valid_word?(candidate)
+      end
+    end
+  end
+
+  def adjacent_words_add_one(word)
+    [].tap do |adjacents|
+      (word.length + 1).times do |i|
+        ('a'..'z').each do |letter|
+          candidate = word.dup
+          candidate.insert(i, letter)
+          adjacents << candidate if valid_word?(candidate)
+        end
+      end
+    end
+  end
 
   def build_tree(source, target=nil)
     raise "#{source} not in dictionary" unless valid_word?(source)
