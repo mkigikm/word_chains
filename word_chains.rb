@@ -1,9 +1,15 @@
 require 'set'
 
 class WordChainer
+  SYSTEM_DICTIONARY = "/usr/share/dict/words"
+
   def initialize(dictionary_filename)
     init_dictionary(dictionary_filename)
     @visited_words = {}
+  end
+
+  def self.system_dictionary
+    WordChainer.new(SYSTEM_DICTIONARY)
   end
 
   def adjacent_words(word)
