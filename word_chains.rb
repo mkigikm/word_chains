@@ -75,6 +75,10 @@ class WordChainer
     end
   end
 
+  def tree
+    @visited_words.keys
+  end
+
   def find_path(target=nil)
     target = @target if target.nil?
     raise "ArgumentError" if target.nil?
@@ -140,7 +144,7 @@ EOF
     if path.nil?
       puts "#{chainer.source} doesn't lead to #{target}"
     else
-      chainer.find_path.each do |word|
+      chainer.find_path(target).each do |word|
         puts word
       end
     end
@@ -148,12 +152,19 @@ EOF
     nil
   end
 
+  def print_tree(chainer)
+    chainer.tree.each do |word|
+      puts word
+    end
+  end
+
   opts = GetoptLong.new(
     ['--help', '-h', GetoptLong::NO_ARGUMENT],
-    ['--dictionary', '-d', GetoptLong::REQUIRED_ARGUMENT]
+    ['--dictionary', '-d', GetoptLong::REQUIRED_ARGUMENT],
+    ['--tree', '-t', GetoptLong::NO_ARGUMENT]
   )
   dictionary_file = WordChainer::DEFAULT_DICTIONARY
-
+  show_tree = false
 
   opts.each do |opt, arg|
     case opt
@@ -162,6 +173,8 @@ EOF
       exit
     when '--dictionary'
       dictionary_file = arg
+    when '--tree'
+      show_tree = true
     end
   end
 
@@ -174,13 +187,21 @@ EOF
 
   chainer.build_tree(ARGV.shift, ARGV.shift)
 
+  if show_tree
+    print_tree(chainer)
+  end
+
   if chainer.target
     print_path(chainer)
   else #interactive mode broken right now
     while true
       print "find path from #{chainer.target} to: "
-      target = gets.chomp
-      print_path(chainer, target)
+      target = gets
+      if target.nil?
+        puts
+        exit
+      end
+      print_path(chainer, target.chomp)
     end
   end
 end
