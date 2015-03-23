@@ -1,2 +1,2 @@
 # word_chains
-word chains assignment for app academy
+A program for linking words. It adds/deletes/changes letters in a word to find neighbors, then looks at those neighbors until it finds a target word.
